@@ -10,6 +10,8 @@
 
 (def *state* (ref {}))
 
+(def *metadata* {})
+
 (defn splash []
   {:status 200
    :headers {"Content-Type" "text/plain"}
@@ -17,18 +19,22 @@
 
 (defn status []
   (dosync
-    (response (vals (deref *state*)))))
+    (response (map (fn [val] (merge val (get *metadata* (:id val)))) (vals (deref *state*))))))
 
 (defn update [req]
   (dosync
     (alter *state* assoc (:id (:body req)) (:body req))
     (response "update successful")))
 
+(defn set-metadata [req]
+              (def *metadata* (reduce (fn [map data] (assoc map (:id data) data)) {} (:body req))))
+
 (defroutes routes
            (GET "/" []
              (splash))
            (GET "/status" [] (status))
            (POST "/update" req (update req))
+           (POST "/metadata" req (set-metadata req))
            (ANY "*" []
              (route/not-found (slurp (io/resource "404.html")))))
 
