@@ -23,6 +23,7 @@
              (route/not-found (slurp (io/resource "404.html")))))
 
 (def app (-> routes
+             (site)
              (middleware/wrap-json-body {:keywords? true :bigdecimals? true})
              (middleware/wrap-json-response)))
 
