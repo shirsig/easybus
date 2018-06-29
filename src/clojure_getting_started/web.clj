@@ -4,6 +4,7 @@
             [compojure.route :as route]
             [clojure.java.io :as io]
             [ring.middleware.json :as middleware]
+            [ring.util.response :refer [response]]
             [ring.adapter.jetty :as jetty]
             [environ.core :refer [env]]))
 
@@ -13,6 +14,7 @@
   {:status 200
    :headers {"Content-Type" "text/plain"}
    :body "Hello from Heroku"})
+
 (defn status []
   (dosync
     (response (vals (deref *state*)))))
@@ -21,6 +23,7 @@
   (dosync
     (alter *state* assoc (:id (:body req)) (:body req))
     (response "update successful")))
+
 (defroutes routes
            (GET "/" []
              (splash))
