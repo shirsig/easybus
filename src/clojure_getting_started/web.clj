@@ -3,19 +3,28 @@
             [compojure.handler :refer [site]]
             [compojure.route :as route]
             [clojure.java.io :as io]
+            [ring.middleware.json :as middleware]
             [ring.adapter.jetty :as jetty]
             [environ.core :refer [env]]))
+
+(def *state* (ref {}))
 
 (defn splash []
   {:status 200
    :headers {"Content-Type" "text/plain"}
    :body "Hello from Heroku"})
 
-(defroutes app
-  (GET "/" []
-       (splash))
-  (ANY "*" []
-       (route/not-found (slurp (io/resource "404.html")))))
+(defroutes routes
+           (GET "/" []
+             (splash))
+           (GET "/status" [] (status))
+           (POST "/update" req (update req))
+           (ANY "*" []
+             (route/not-found (slurp (io/resource "404.html")))))
+
+(def app (-> routes
+             (middleware/wrap-json-body {:keywords? true :bigdecimals? true})
+             (middleware/wrap-json-response)))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]
