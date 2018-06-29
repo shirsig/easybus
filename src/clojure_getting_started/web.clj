@@ -13,7 +13,14 @@
   {:status 200
    :headers {"Content-Type" "text/plain"}
    :body "Hello from Heroku"})
+(defn status []
+  (dosync
+    (response (vals (deref *state*)))))
 
+(defn update [req]
+  (dosync
+    (alter *state* assoc (:id (:body req)) (:body req))
+    (response "update successful")))
 (defroutes routes
            (GET "/" []
              (splash))
